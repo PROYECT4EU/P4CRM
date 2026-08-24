@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1",
+  "tables": {
+    "ORGANISATIONS": ["organisation_id", "name", "legal_name", "organisation_type", "country", "region", "island", "municipality", "postal_code", "address", "website", "status", "created_at", "updated_at", "notes"],
+    "CONTACT_POINTS": ["contact_point_id", "organisation_id", "person_id", "contact_type", "value", "label", "is_generic", "source_id", "verified_at", "status", "created_at", "updated_at"],
+    "PEOPLE": ["person_id", "organisation_id", "given_name", "family_name", "role", "department", "status", "created_at", "updated_at", "notes"],
+    "SOURCES": ["source_id", "source_type", "source_name", "source_url", "publisher", "retrieved_at", "licence_or_terms", "notes"],
+    "PROSPECTS": ["prospect_id", "organisation_id", "project_code", "source_id", "segment", "priority", "relationship_status", "interests", "owner", "created_at", "updated_at", "notes"],
+    "CONSENTS": ["consent_id", "contact_point_id", "controller_code", "purpose_code", "channel", "status", "granted_at", "revoked_at", "source_type", "form_id", "text_version", "privacy_version", "evidence_ref", "notes"],
+    "SUPPRESSIONS": ["suppression_id", "contact_point_id", "controller_code", "purpose_code", "channel", "reason", "suppressed_at", "source", "notes"],
+    "INTERACTIONS": ["interaction_id", "organisation_id", "contact_point_id", "project_code", "campaign_id", "interaction_type", "direction", "occurred_at", "outcome", "reference", "notes"],
+    "CAMPAIGNS": ["campaign_id", "name", "project_code", "purpose_code", "channel", "audience_definition", "start_at", "end_at", "status", "frequency_rule", "notes"],
+    "DATA_TRANSFERS": ["transfer_id", "contact_point_id", "from_controller_code", "to_controller_code", "purpose_code", "legal_basis", "consent_id", "transferred_at", "transfer_method", "receipt_ref", "status", "notes"],
+    "PROJECTS": ["project_code", "project_name", "controller_code", "project_type", "status", "start_date", "end_date", "website", "notes"],
+    "OPPORTUNITIES": ["opportunity_id", "organisation_id", "project_code", "opportunity_type", "theme", "stage", "estimated_start", "owner", "value_or_scope", "created_at", "updated_at", "notes"]
+  },
+  "consent_scope": ["contact_point_id", "controller_code", "purpose_code", "channel"],
+  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "SAN_BLAS_EDUCATIONAL_VISITS"],
+  "rules": [
+    "contact point does not imply communication permission",
+    "interests do not imply communication permission",
+    "suppressions survive re-imports",
+    "each imported contact point must reference a source",
+    "completed third-party transfers must be traceable to their authorisation",
+    "production contact data must not be committed to this repository"
+  ]
+}

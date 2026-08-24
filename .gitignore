@@ -1,0 +1,38 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+credentials*.json
+service-account*.json
+*.pem
+*.key
+
+# Local tooling
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Dependencies / build output
+node_modules/
+dist/
+build/
+coverage/
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Google Apps Script local config
+.clasp.json
+
+# Operational CRM data must never be committed
+/data/
+/exports/
+/imports/
+*.contacts.csv
+*.contacts.json
+*.consents.csv
+*.consents.json

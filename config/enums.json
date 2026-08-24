@@ -3,19 +3,26 @@
   "record_status": ["ACTIVE", "INACTIVE", "ARCHIVED"],
   "contact_point_status": ["ACTIVE", "BOUNCED", "INVALID", "INACTIVE"],
   "source_types": ["PUBLIC_DIRECTORY", "ORGANISATION_WEBSITE", "DIRECT_CONTACT", "FORM", "REFERRAL", "EXISTING_RELATION", "OTHER"],
-  "consent_source_types": ["WEBSITE", "FORM", "DIRECT_CONTACT", "PHONE", "PAPER", "OTHER"],
+  "consent_source_types": ["WEBSITE", "FORM", "DIRECT_CONTACT", "PHONE", "EMAIL_CONFIRMATION", "PAPER", "OTHER"],
   "consent_status": ["NOT_GRANTED", "GRANTED", "REVOKED", "DECLINED", "EXPIRED"],
+  "consent_event_types": ["GRANTED", "REVOKED", "DECLINED", "EXPIRED"],
+  "consent_request_status": ["CREATED", "SENT", "CONFIRMED", "EXPIRED", "CANCELLED", "FAILED"],
+  "consent_request_scope_decision": ["PENDING", "GRANTED", "NOT_GRANTED"],
   "suppression_reasons": ["UNSUBSCRIBED", "OBJECTED", "BOUNCE", "INVALID", "MANUAL_BLOCK", "COMPLAINT"],
-  "organisation_types": ["SCHOOL", "UNIVERSITY", "ASSOCIATION", "NGO", "PUBLIC_ADMINISTRATION", "COMPANY", "CULTURAL_ENTITY", "ENVIRONMENTAL_ENTITY", "OTHER"],
+  "organisation_types": ["SCHOOL", "UNIVERSITY", "ASSOCIATION", "AMPA", "NGO", "PUBLIC_ADMINISTRATION", "COMPANY", "CULTURAL_ENTITY", "ENVIRONMENTAL_ENTITY", "OTHER"],
   "priority": ["LOW", "MEDIUM", "HIGH"],
   "relationship_status": ["NEW", "CONTACTED", "ENGAGED", "ACTIVE_RELATION", "DORMANT", "CLOSED"],
-  "interaction_types": ["EMAIL", "PHONE_CALL", "MEETING", "FORM_SUBMISSION", "RESOURCE_ACCESS", "ENQUIRY", "PARTICIPATION", "OTHER"],
+  "interaction_types": ["EMAIL", "PHONE_CALL", "CONSENT_REQUEST", "CONSENT_CONFIRMATION_EMAIL", "MEETING", "FORM_SUBMISSION", "RESOURCE_ACCESS", "ENQUIRY", "PARTICIPATION", "OTHER"],
   "interaction_direction": ["INBOUND", "OUTBOUND", "INTERNAL"],
   "campaign_status": ["DRAFT", "SCHEDULED", "ACTIVE", "PAUSED", "COMPLETED", "CANCELLED"],
   "legal_basis": ["CONSENT", "CONTRACT", "LEGITIMATE_INTEREST", "LEGAL_OBLIGATION", "OTHER"],
   "transfer_status": ["PENDING", "COMPLETED", "FAILED", "REVOKED"],
+  "import_status": ["PENDING", "COMPLETED", "COMPLETED_WITH_REJECTIONS", "FAILED"],
   "project_status": ["ACTIVE", "INACTIVE"],
   "opportunity_stage": ["IDENTIFIED", "INITIAL_INTEREST", "CONTACTED", "MEETING_REQUESTED", "PROPOSAL", "APPROVED", "IN_PROGRESS", "COMPLETED", "LOST"],
   "initial_projects": ["P4", "SAN_BLAS", "GOFIODESIGN"],
-  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "SAN_BLAS_EDUCATIONAL_VISITS"]
+  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "SAN_BLAS_EDUCATIONAL_INFO", "SAN_BLAS_GENERAL_UPDATES"],
+  "deprecated_purpose_aliases": {
+    "SAN_BLAS_EDUCATIONAL_VISITS": "SAN_BLAS_EDUCATIONAL_INFO"
+  }
 }

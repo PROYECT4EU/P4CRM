@@ -21,9 +21,9 @@
     "OPPORTUNITIES": ["opportunity_id", "organisation_id", "project_code", "opportunity_type", "theme", "stage", "estimated_start", "owner", "value_or_scope", "created_at", "updated_at", "notes"]
   },
   "consent_scope": ["contact_point_id", "controller_code", "purpose_code", "channel"],
-  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "SAN_BLAS_EDUCATIONAL_INFO", "SAN_BLAS_GENERAL_UPDATES"],
+  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "PARTNER_EDUCATIONAL_INFO", "PARTNER_GENERAL_UPDATES"],
   "deprecated_purpose_aliases": {
-    "SAN_BLAS_EDUCATIONAL_VISITS": "SAN_BLAS_EDUCATIONAL_INFO"
+    "PARTNER_EDUCATIONAL_VISITS": "PARTNER_EDUCATIONAL_INFO"
   },
   "rules": [
     "contact point does not imply communication permission",

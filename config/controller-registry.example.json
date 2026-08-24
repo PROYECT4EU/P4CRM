@@ -6,12 +6,12 @@
       "privacy_url": "https://proyect4.eu/",
       "production_ready": true
     },
-    "SAN_BLAS": {
-      "display_name": "San Blas Reserva Ambiental",
+    "PARTNER": {
+      "display_name": "Partner organisation",
       "legal_name": null,
       "privacy_url": null,
       "production_ready": false,
-      "notes": "Exact legal controller/recipient must be verified before enabling production consent or transfer workflows."
+      "notes": "Each deployment must configure and verify the exact legal controller/recipient before enabling partner consent or transfer workflows."
     }
   }
 }

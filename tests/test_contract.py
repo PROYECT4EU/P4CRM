@@ -29,13 +29,13 @@ class ContractTests(unittest.TestCase):
         self.assertIn("CONSENT_REQUEST_SCOPES", schema["tables"])
         self.assertIn("CONSENT_EVENTS", schema["tables"])
 
-    def test_san_blas_purposes_are_granular(self):
+    def test_partner_purposes_are_granular(self):
         schema = validator.load_json(validator.SCHEMA_PATH)
         purposes = set(schema["initial_purposes"])
-        self.assertIn("SAN_BLAS_EDUCATIONAL_INFO", purposes)
-        self.assertIn("SAN_BLAS_GENERAL_UPDATES", purposes)
+        self.assertIn("PARTNER_EDUCATIONAL_INFO", purposes)
+        self.assertIn("PARTNER_GENERAL_UPDATES", purposes)
 
-    def test_san_blas_transfer_is_traceable_to_consent(self):
+    def test_partner_transfer_is_traceable_to_consent(self):
         schema = validator.load_json(validator.SCHEMA_PATH)
         fields = set(schema["tables"]["DATA_TRANSFERS"])
         self.assertIn("consent_id", fields)

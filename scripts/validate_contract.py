@@ -24,8 +24,8 @@ REQUIRED_CONSENT_SCOPE = {
 
 REQUIRED_PURPOSES = {
     "P4_EDUCATIONAL_RELATION",
-    "SAN_BLAS_EDUCATIONAL_INFO",
-    "SAN_BLAS_GENERAL_UPDATES",
+    "PARTNER_EDUCATIONAL_INFO",
+    "PARTNER_GENERAL_UPDATES",
 }
 
 
@@ -104,8 +104,8 @@ def validate() -> list[str]:
         errors.append("schema and enum initial_purposes do not match")
 
     aliases = schema.get("deprecated_purpose_aliases", {})
-    if aliases.get("SAN_BLAS_EDUCATIONAL_VISITS") != "SAN_BLAS_EDUCATIONAL_INFO":
-        errors.append("v0.1 San Blas purpose migration alias is missing")
+    if aliases.get("PARTNER_EDUCATIONAL_VISITS") != "PARTNER_EDUCATIONAL_INFO":
+        errors.append("v0.1 partner-purpose migration alias is missing")
 
     if "EMAIL_CONFIRMATION" not in enums.get("consent_source_types", []):
         errors.append("consent_source_types must include EMAIL_CONFIRMATION")

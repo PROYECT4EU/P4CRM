@@ -21,12 +21,12 @@ class ConfirmationTests(unittest.TestCase):
         self.bundle = create_confirmation_request(
             contact_point_id="cp_test",
             organisation_id="org_test",
-            destination="colegio@example.org",
-            target_controller_code="SAN_BLAS",
-            purpose_codes=["SAN_BLAS_EDUCATIONAL_INFO", "SAN_BLAS_GENERAL_UPDATES"],
+            destination="school@example.org",
+            target_controller_code="PARTNER",
+            purpose_codes=["PARTNER_EDUCATIONAL_INFO", "PARTNER_GENERAL_UPDATES"],
             origin_interaction_id="int_phone_1",
-            form_id="SAN_BLAS_CONFIRM_V1",
-            text_version="SAN_BLAS_CONFIRM_TEXT_V1",
+            form_id="PARTNER_CONFIRM_V1",
+            text_version="PARTNER_CONFIRM_TEXT_V1",
             privacy_version="PRIVACY_V1",
             now=self.now,
         )
@@ -46,16 +46,16 @@ class ConfirmationTests(unittest.TestCase):
             request=sent,
             scopes=self.bundle.scopes,
             presented_token=self.bundle.token,
-            granted_purpose_codes=["SAN_BLAS_EDUCATIONAL_INFO"],
+            granted_purpose_codes=["PARTNER_EDUCATIONAL_INFO"],
             now=self.now + timedelta(minutes=2),
         )
 
         self.assertEqual("CONFIRMED", confirmed["status"])
         decisions = {scope["purpose_code"]: scope["decision"] for scope in scopes}
-        self.assertEqual("GRANTED", decisions["SAN_BLAS_EDUCATIONAL_INFO"])
-        self.assertEqual("NOT_GRANTED", decisions["SAN_BLAS_GENERAL_UPDATES"])
+        self.assertEqual("GRANTED", decisions["PARTNER_EDUCATIONAL_INFO"])
+        self.assertEqual("NOT_GRANTED", decisions["PARTNER_GENERAL_UPDATES"])
         self.assertEqual(1, len(consents))
-        self.assertEqual("SAN_BLAS_EDUCATIONAL_INFO", consents[0]["purpose_code"])
+        self.assertEqual("PARTNER_EDUCATIONAL_INFO", consents[0]["purpose_code"])
         self.assertEqual("EMAIL_CONFIRMATION", consents[0]["source_type"])
         self.assertEqual(1, len(events))
         self.assertEqual(sent["request_id"], events[0]["request_id"])
@@ -67,7 +67,7 @@ class ConfirmationTests(unittest.TestCase):
                 request=sent,
                 scopes=self.bundle.scopes,
                 presented_token="wrong-token",
-                granted_purpose_codes=["SAN_BLAS_EDUCATIONAL_INFO"],
+                granted_purpose_codes=["PARTNER_EDUCATIONAL_INFO"],
                 now=self.now + timedelta(minutes=1),
             )
 

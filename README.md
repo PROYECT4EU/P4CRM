@@ -1,30 +1,22 @@
 # P4CRM
 
-**P4CRM** is an open-source CRM for managing institutional contacts, communication consent, segmentation, educational outreach and long-term project relationships.
+**P4CRM** is an open-source CRM for institutional contacts, consent, educational outreach and long-term project relationships.
 
-The project is developed by **PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio**.
+Developed by **PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio**.
 
 ## Purpose
 
-P4CRM provides a simple and transparent way to manage relationships with organisations and professional contacts while keeping provenance, permissions, communication history and data use traceable.
+P4CRM manages relationships with organisations and professional contacts while keeping data provenance, communication permissions, interactions and authorised transfers traceable.
 
-The system is intended for relationships with:
+It is intended for relationships with schools, AMPAs, education professionals, associations, NGOs, public/private institutions, companies, partners and organisations interested in educational, environmental, cultural, social or entrepreneurial initiatives.
 
-- schools and educational centres;
-- teachers and education professionals;
-- associations and NGOs;
-- public and private institutions;
-- companies and professional contacts;
-- project partners and collaborators;
-- organisations interested in educational, environmental, cultural, social or entrepreneurial initiatives.
-
-P4CRM is not intended to be just a sales database. Its main purpose is to manage **relationships, permissions, communication workflows and project opportunities**.
+P4CRM is not just a sales database. Its core objects are **relationships, permissions, communication workflows and project opportunities**.
 
 ## Core principles
 
 ### Contact is not consent
 
-A professional or institutional contact can exist in P4CRM with documented provenance without being authorised for marketing communication.
+A professional or institutional contact may exist with documented provenance without being authorised for recurring promotional/marketing email.
 
 ### Consent is scoped
 
@@ -34,48 +26,41 @@ Where consent is the applicable basis, P4CRM models it by:
 contact point + controller + purpose + channel
 ```
 
-Consent must not be assumed to apply automatically to another organisation, project or purpose.
+### Requests are not grants
 
-### Data minimisation
-
-Only information useful for a legitimate relationship or communication purpose should be stored.
+A phone call may initiate an email-confirmation request. The request remains separate from consent until the recipient performs the required affirmative confirmation action.
 
 ### Traceability
 
-P4CRM records the source of imported contact data and is designed to keep consent, suppression, interaction and transfer history auditable.
-
-### Separation of purposes
-
-A school may independently:
-
-- receive educational information from PROYECT4;
-- participate in a PROYECT4 educational project;
-- be interested in sustainability workshops or escape rooms;
-- authorise its contact details to be communicated for information about educational visits to Reserva Ambiental San Blas.
-
-Those relationships and permissions remain distinguishable.
+P4CRM preserves source provenance, import batches, consent events, suppression history, interactions and authorised transfers.
 
 ### Suppressions survive imports
 
-An unsubscribe, objection or block must not disappear simply because the same address is later found again in a public directory.
+An unsubscribe, objection or block is not removed merely because the same address is later found again in a directory.
 
 ### Open source, private operational data
 
-The code, architecture and schema are open. Real CRM contact records, consent evidence and credentials are **not** stored in this public repository.
+Code, architecture and schemas are open. Real CRM records, consent evidence, raw confirmation tokens and credentials are not committed to this repository.
 
-## v0.1 foundation
+## v0.2
 
-The first implementation milestone establishes the CRM data contract and workflows before the production runtime is selected.
+Schema v0.2 adds repeatable imports and phone-to-email consent confirmation.
 
-Current v0.1 entities:
+Current entities:
 
 ```text
 ORGANISATIONS
+ORGANISATION_IDENTIFIERS
 CONTACT_POINTS
+CONTACT_POINT_SOURCES
 PEOPLE
 SOURCES
+IMPORT_BATCHES
 PROSPECTS
 CONSENTS
+CONSENT_EVENTS
+CONSENT_REQUESTS
+CONSENT_REQUEST_SCOPES
 SUPPRESSIONS
 INTERACTIONS
 CAMPAIGNS
@@ -84,164 +69,152 @@ PROJECTS
 OPPORTUNITIES
 ```
 
-Documentation:
+The machine-readable contract is [schemas/p4crm-v0.2.json](schemas/p4crm-v0.2.json). v0.1 remains available as the previous versioned contract.
 
-- [Architecture](docs/architecture.md)
-- [Data model](docs/data-model.md)
-- [Consent and transfer flow](docs/consent-flow.md)
-- [Machine-readable v0.1 table contract](schemas/p4crm-v0.1.json)
-- [Controlled values](config/enums.json)
-- [Changelog](CHANGELOG.md)
-
-## Initial San Blas use case
-
-P4CRM belongs to PROYECT4. Reserva Ambiental San Blas is represented as a related external project/use case.
-
-The intended flow is:
+## Institutional import flow
 
 ```text
-professional / institutional source
-              |
-              v
-            P4CRM
-              |
-      PROYECT4 relationship
-              |
-              +--> optional PROYECT4 educational consent
-              |
-              +--> separate San Blas authorisation
-                          |
-                          v
-                authorised data transfer
-                          |
-                          v
-              Reserva Ambiental San Blas
+official / professional source
+          |
+          v
+     normalisation
+          |
+          +--> SOURCES / IMPORT_BATCHES
+          +--> ORGANISATIONS
+          +--> ORGANISATION_IDENTIFIERS
+          +--> CONTACT_POINTS
+          +--> CONTACT_POINT_SOURCES
+          +--> PROSPECTS
 ```
 
-Only contacts that have the required specific authorisation may be included in the corresponding San Blas transfer workflow.
+The v0.2 importer uses deterministic IDs so repeated imports can resolve the same organisation/contact instead of creating a new record every time.
 
-The exact legal entity behind the `SAN_BLAS` controller code must be confirmed before production use.
+An imported address does **not** generate consent.
 
-## Educational relationships
+See [Import contract](docs/import-contract.md).
 
-P4CRM supports long-term institutional relationships instead of treating every contact as a sales lead.
+## Phone -> email confirmation
 
-Potential future PROYECT4 work with an organisation may include:
+A school or AMPA can provide an address during a phone call and request a confirmation message.
 
-- sustainability and environmental education;
-- biodiversity, territory and heritage;
-- entrepreneurship;
-- social relationships and coexistence;
-- educational escape rooms;
-- case-based learning;
-- arts and creative education;
-- new educational resources and activities.
+```text
+PHONE_CALL
+    |
+    v
+CONSENT_REQUEST
+    |
+    v
+neutral confirmation email
+(one-time opaque token)
+    |
+    v
+confirmation/preferences page
+    |
+    v
+explicit affirmative action
+    |
+    +--> CONSENT
+    +--> append-only CONSENT_EVENT
+```
 
-These interests may be used for relationship management and segmentation, but **interests are not permissions**.
+The raw token is not persisted: P4CRM stores only a cryptographic digest. Requests expire and are single-use.
+
+See [Email confirmation after a phone call](docs/email-confirmation-flow.md) and [Consent and transfer flow](docs/consent-flow.md).
+
+## Initial purposes
+
+### PROYECT4
+
+`P4_EDUCATIONAL_RELATION`
+
+Educational resources, activities, initiatives and projects from PROYECT4 within the scope explained to the recipient.
+
+### Reserva Ambiental San Blas
+
+`SAN_BLAS_EDUCATIONAL_INFO`
+
+Educational materials/resources, educational visits and educational activities related to Reserva Ambiental San Blas.
+
+`SAN_BLAS_GENERAL_UPDATES`
+
+Separately selectable general updates about the Reserve.
+
+The v0.1 code `SAN_BLAS_EDUCATIONAL_VISITS` is deprecated and maps to `SAN_BLAS_EDUCATIONAL_INFO`.
+
+The exact legal entity represented by the `SAN_BLAS` controller code **must be verified before production use**. The repository deliberately does not invent it. See [config/controller-registry.example.json](config/controller-registry.example.json).
+
+## San Blas transfer boundary
+
+P4CRM belongs to PROYECT4. San Blas is a related external project/controller use case.
+
+Where PROYECT4 collects a valid authorisation for a San Blas purpose, P4CRM may record the later transfer:
+
+```text
+confirmed SAN_BLAS consent
+          |
+          v
+DATA_TRANSFER: P4 -> SAN_BLAS
+          |
+          v
+only data required for the granted purpose
+```
+
+Every completed transfer points back to the consent that authorised it.
+
+## Reference implementation
+
+The v0.2 repository contains storage-agnostic Python helpers using only the standard library:
+
+- `src/p4crm/importer.py` — email/URL normalisation and deterministic IDs;
+- `src/p4crm/confirmation.py` — one-time confirmation request/token domain flow;
+- `scripts/prepare_import.py` — CSV staging into accepted/rejected JSONL;
+- `scripts/validate_contract.py` — repository/schema validation;
+- `tests/` — contract, importer and confirmation tests.
+
+These helpers do not select the final production database or email provider.
 
 ## Repository structure
 
 ```text
 P4CRM/
-├── config/       # controlled values and configuration contracts
-├── docs/         # architecture and workflow documentation
-├── schemas/      # versioned data contracts
-├── scripts/      # future import/export/migration tooling
-├── src/          # future application source
-├── tests/        # contract and workflow tests
+├── .github/workflows/
+├── config/
+├── docs/
+├── schemas/
+├── scripts/
+├── src/p4crm/
+├── tests/
 ├── CHANGELOG.md
 └── README.md
 ```
 
-Operational data is maintained outside the public Git repository.
-
-## Planned capabilities
-
-### Contact and organisation management
-
-- organisations;
-- optional named professional contacts;
-- multiple contact points per organisation;
-- source provenance and verification dates;
-- tags, interests and segmentation;
-- relationship history.
-
-### Consent and suppression management
-
-- scoped consent records;
-- consent source and timestamp;
-- wording and privacy-notice versions;
-- communication channels and purposes;
-- withdrawal history;
-- suppression lists;
-- evidence references.
-
-### Communication management
-
-- campaign definitions;
-- audience rules;
-- communication history;
-- frequency controls;
-- unsubscribe/suppression enforcement;
-- future delivery-system integration.
-
-### Projects and opportunities
-
-- project registry;
-- relationship opportunities;
-- educational project themes;
-- follow-up stages;
-- participation and collaboration history.
-
-### Authorised transfers
-
-P4CRM can record an explicit transfer event when a contact has authorised data communication to another controller for a defined purpose. The transfer record points back to the authorising consent/evidence.
-
 ## Google Drive prototype
 
-The current operational prototype uses a shared Google Drive workspace and a `P4CRM_CORE` Google Sheet that mirrors the v0.1 logical model for early data preparation.
-
-GitHub remains the source of truth for schema, code, scripts, tests and technical documentation. Google Drive contains operational working data and must not be treated as a public-code repository.
+The current operational prototype uses the shared P4CRM Google Drive workspace and the `P4CRM_CORE` Google Sheet. GitHub is the source of truth for code, schemas, tests and technical documentation; operational CRM data stays outside the public repository.
 
 ## Privacy and data protection
 
-P4CRM is intended to be designed around privacy by default, including:
+P4CRM is designed around purpose limitation, data minimisation, scoped permissions, evidence, withdrawal, suppression, provenance and controller separation.
 
-- purpose limitation;
-- data minimisation;
-- scoped permissions where applicable;
-- consent evidence;
-- withdrawal management;
-- access control;
-- retention policies;
-- export/deletion workflows;
-- suppression of contacts who opt out;
-- separation between controllers and communication purposes.
-
-Compliance with applicable data-protection and electronic-communications rules must be evaluated according to each deployment and use case. P4CRM's schema does not itself determine the lawful basis of a particular communication.
+The schema supports compliance work but does not itself determine the lawful basis of any specific communication. Each deployment and campaign must apply the relevant data-protection and electronic-communications rules.
 
 ## Project status
 
-**Schema / architecture v0.1 — early development.**
+**v0.2 — import + email-confirmation foundation. Early development.**
 
-The public educational-resources website is being treated as a separate project. P4CRM may later receive consent and interaction events from that website through a defined integration.
+The public educational-resources website remains a separate project. It may later send consent/interaction events into P4CRM through a defined integration.
 
 ## Roadmap
 
-1. Finalise and validate schema v0.1.
-2. Define stable ID generation and normalisation rules.
-3. Implement source/import validation.
-4. Import the first controlled set of educational organisations.
-5. Implement suppression-aware audience logic.
-6. Implement consent-event history.
-7. Implement San Blas authorised-transfer export.
-8. Add campaign and interaction tooling.
-9. Add project/opportunity workflows.
-10. Define user roles, access control and production storage.
-
-## Contributing
-
-P4CRM is intended to evolve as an open-source project. Contribution guidelines will be added as the project structure becomes stable.
+1. Connect the v0.2 import staging layer to the operational CRM store.
+2. Import and review the first controlled educational-centre dataset.
+3. Implement suppression-aware audience selection.
+4. Implement the confirmation endpoint and mail-provider adapter.
+5. Verify/configure the legal controller behind `SAN_BLAS`.
+6. Implement authorised San Blas export/transfer.
+7. Add campaign delivery and interaction ingestion.
+8. Add project/opportunity workflows.
+9. Define user roles, access control and retention policies.
 
 ## License
 

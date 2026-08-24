@@ -1,0 +1,21 @@
+{
+  "channels": ["EMAIL", "PHONE", "WEB", "POSTAL"],
+  "record_status": ["ACTIVE", "INACTIVE", "ARCHIVED"],
+  "contact_point_status": ["ACTIVE", "BOUNCED", "INVALID", "INACTIVE"],
+  "source_types": ["PUBLIC_DIRECTORY", "ORGANISATION_WEBSITE", "DIRECT_CONTACT", "FORM", "REFERRAL", "EXISTING_RELATION", "OTHER"],
+  "consent_source_types": ["WEBSITE", "FORM", "DIRECT_CONTACT", "PHONE", "PAPER", "OTHER"],
+  "consent_status": ["NOT_GRANTED", "GRANTED", "REVOKED", "DECLINED", "EXPIRED"],
+  "suppression_reasons": ["UNSUBSCRIBED", "OBJECTED", "BOUNCE", "INVALID", "MANUAL_BLOCK", "COMPLAINT"],
+  "organisation_types": ["SCHOOL", "UNIVERSITY", "ASSOCIATION", "NGO", "PUBLIC_ADMINISTRATION", "COMPANY", "CULTURAL_ENTITY", "ENVIRONMENTAL_ENTITY", "OTHER"],
+  "priority": ["LOW", "MEDIUM", "HIGH"],
+  "relationship_status": ["NEW", "CONTACTED", "ENGAGED", "ACTIVE_RELATION", "DORMANT", "CLOSED"],
+  "interaction_types": ["EMAIL", "PHONE_CALL", "MEETING", "FORM_SUBMISSION", "RESOURCE_ACCESS", "ENQUIRY", "PARTICIPATION", "OTHER"],
+  "interaction_direction": ["INBOUND", "OUTBOUND", "INTERNAL"],
+  "campaign_status": ["DRAFT", "SCHEDULED", "ACTIVE", "PAUSED", "COMPLETED", "CANCELLED"],
+  "legal_basis": ["CONSENT", "CONTRACT", "LEGITIMATE_INTEREST", "LEGAL_OBLIGATION", "OTHER"],
+  "transfer_status": ["PENDING", "COMPLETED", "FAILED", "REVOKED"],
+  "project_status": ["ACTIVE", "INACTIVE"],
+  "opportunity_stage": ["IDENTIFIED", "INITIAL_INTEREST", "CONTACTED", "MEETING_REQUESTED", "PROPOSAL", "APPROVED", "IN_PROGRESS", "COMPLETED", "LOST"],
+  "initial_projects": ["P4", "SAN_BLAS", "GOFIODESIGN"],
+  "initial_purposes": ["P4_EDUCATIONAL_RELATION", "SAN_BLAS_EDUCATIONAL_VISITS"]
+}

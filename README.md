@@ -95,7 +95,7 @@ See [Import contract](docs/import-contract.md).
 
 ## Phone -> email confirmation
 
-A school or AMPA can provide an address during a phone call and request a confirmation message.
+An organisation can provide an address during a phone call and request a confirmation message.
 
 ```text
 PHONE_CALL
@@ -129,31 +129,31 @@ See [Email confirmation after a phone call](docs/email-confirmation-flow.md) and
 
 Educational resources, activities, initiatives and projects from PROYECT4 within the scope explained to the recipient.
 
-### Reserva Ambiental San Blas
+### Partner organisation
 
-`SAN_BLAS_EDUCATIONAL_INFO`
+`PARTNER_EDUCATIONAL_INFO`
 
-Educational materials/resources, educational visits and educational activities related to Reserva Ambiental San Blas.
+Educational materials/resources, educational visits and educational activities offered by an external partner.
 
-`SAN_BLAS_GENERAL_UPDATES`
+`PARTNER_GENERAL_UPDATES`
 
-Separately selectable general updates about the Reserve.
+Separately selectable general updates from that partner.
 
-The v0.1 code `SAN_BLAS_EDUCATIONAL_VISITS` is deprecated and maps to `SAN_BLAS_EDUCATIONAL_INFO`.
+The v0.1 generic code `PARTNER_EDUCATIONAL_VISITS` is deprecated and maps to `PARTNER_EDUCATIONAL_INFO`.
 
-The exact legal entity represented by the `SAN_BLAS` controller code **must be verified before production use**. The repository deliberately does not invent it. See [config/controller-registry.example.json](config/controller-registry.example.json).
+The exact legal entity represented by the `PARTNER` controller code **must be configured and verified for each deployment before production use**. See [config/controller-registry.example.json](config/controller-registry.example.json).
 
-## San Blas transfer boundary
+## Partner transfer boundary
 
-P4CRM belongs to PROYECT4. San Blas is a related external project/controller use case.
+P4CRM belongs to PROYECT4. A partner is represented as a configurable external project/controller.
 
-Where PROYECT4 collects a valid authorisation for a San Blas purpose, P4CRM may record the later transfer:
+Where PROYECT4 collects a valid authorisation for a partner purpose, P4CRM may record the later transfer:
 
 ```text
-confirmed SAN_BLAS consent
+confirmed PARTNER consent
           |
           v
-DATA_TRANSFER: P4 -> SAN_BLAS
+DATA_TRANSFER: P4 -> PARTNER
           |
           v
 only data required for the granted purpose
@@ -210,8 +210,8 @@ The public educational-resources website remains a separate project. It may late
 2. Import and review the first controlled educational-centre dataset.
 3. Implement suppression-aware audience selection.
 4. Implement the confirmation endpoint and mail-provider adapter.
-5. Verify/configure the legal controller behind `SAN_BLAS`.
-6. Implement authorised San Blas export/transfer.
+5. Configure and verify deployment-specific partner controllers.
+6. Implement authorised partner export/transfer.
 7. Add campaign delivery and interaction ingestion.
 8. Add project/opportunity workflows.
 9. Define user roles, access control and retention policies.

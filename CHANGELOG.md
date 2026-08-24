@@ -15,16 +15,17 @@ All notable changes to P4CRM will be documented here.
 - Append-only `CONSENT_EVENTS` audit model alongside current consent state.
 - Phone-call to email-confirmation workflow with one-time, expiring tokens.
 - Storage-agnostic confirmation implementation using cryptographically random tokens and stored SHA-256 digests.
-- Separate San Blas scopes for educational information and general updates.
+- Separate generic partner scopes for educational information and general updates.
 - Staging CSV import preparation script with accepted/rejected JSONL output.
 - Tests covering import identity, provenance and consent-confirmation security/state transitions.
-- Example controller registry that blocks San Blas production readiness until its exact legal entity is verified.
+- Example controller registry requiring deployment-specific partner legal identity before production readiness.
 
 ### Changed
 
-- `SAN_BLAS_EDUCATIONAL_VISITS` is deprecated in favour of `SAN_BLAS_EDUCATIONAL_INFO`, covering educational materials/resources, visits and educational activities.
-- General San Blas updates are a separate `SAN_BLAS_GENERAL_UPDATES` purpose.
-- The repository contract validator now targets schema v0.2.
+- `PARTNER_EDUCATIONAL_VISITS` is deprecated in favour of `PARTNER_EDUCATIONAL_INFO`, covering educational materials/resources, visits and educational activities.
+- General partner updates are a separate `PARTNER_GENERAL_UPDATES` purpose.
+- External partner examples and controller codes are genericised as `PARTNER`; deployment-specific partner identities are not encoded in the public repository.
+- The repository contract validator targets schema v0.2.
 
 ### Security / privacy
 
@@ -35,8 +36,8 @@ All notable changes to P4CRM will be documented here.
 
 ### Notes
 
-- The exact legal identity represented by `SAN_BLAS` remains a production blocker and is not invented by the project.
-- v0.2 still separates open-source code/schema from real operational contact and consent data.
+- The exact legal identity represented by `PARTNER` is deployment configuration and must be verified before production use.
+- v0.2 separates open-source code/schema from real operational contact and consent data.
 
 ## [0.1] - 2026-08-24
 
@@ -50,12 +51,12 @@ All notable changes to P4CRM will be documented here.
 - Campaign and interaction entities.
 - Project and opportunity tracking for long-term educational relationships.
 - Explicit data-transfer audit model for authorised transfers from PROYECT4 to third parties.
-- Initial San Blas educational-visits consent flow.
+- Initial generic partner educational-visits consent flow.
 - Machine-readable v0.1 table contract and controlled enums.
 - Repository rules preventing operational CRM exports and credentials from being committed.
 
 ### Notes
 
 - v0.1 is a schema/architecture baseline, not a production release.
-- The legal identity behind the `SAN_BLAS` controller code remains intentionally unresolved until confirmed.
-- The public educational-resources website is a separate project and is not implemented in this repository.
+- Partner legal identities are deployment-specific and are not embedded in the public repository.
+- Public educational-resource websites are separate projects and are not implemented in this repository.

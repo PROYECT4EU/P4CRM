@@ -1,26 +1,27 @@
-# P4CRM data model — v0.1
+# P4CRM data model — v0.2
 
-This document defines the first logical model for P4CRM. The machine-readable contract lives in [`schemas/p4crm-v0.1.json`](../schemas/p4crm-v0.1.json).
+The machine-readable contract lives in [`schemas/p4crm-v0.2.json`](../schemas/p4crm-v0.2.json).
 
 ## Entity map
 
 ```text
 ORGANISATIONS
-  | 1
-  |----< CONTACT_POINTS
+  |----< ORGANISATION_IDENTIFIERS
+  |----< CONTACT_POINTS ----< CONTACT_POINT_SOURCES
   |----< PEOPLE
   |----< PROSPECTS >---- PROJECTS
   |----< OPPORTUNITIES >- PROJECTS
 
+SOURCES
+  |----< IMPORT_BATCHES
+  |----< CONTACT_POINT_SOURCES
+
 CONTACT_POINTS
-  |----< CONSENTS
+  |----< CONSENT_REQUESTS ----< CONSENT_REQUEST_SCOPES
+  |----< CONSENTS ----< CONSENT_EVENTS
   |----< SUPPRESSIONS
   |----< INTERACTIONS
   |----< DATA_TRANSFERS
-
-SOURCES
-  |----< CONTACT_POINTS
-  |----< PROSPECTS
 
 CAMPAIGNS
   |----< INTERACTIONS
@@ -29,111 +30,93 @@ CONSENTS
   |----< DATA_TRANSFERS
 ```
 
-## 1. ORGANISATIONS
+## ORGANISATIONS
 
-Represents a legal or institutional organisation: school, association, public administration, company, NGO, university, cultural entity, etc.
+Represents a school, association, public administration, company, NGO, university, cultural entity or other institutional organisation.
 
-Primary key: `organisation_id`
+Primary key: `organisation_id`.
 
-Fields:
+An organisation is created once and can participate in multiple projects and relationships.
 
-| Field | Required | Description |
-|---|---:|---|
-| `organisation_id` | yes | Stable P4CRM identifier |
-| `name` | yes | Display name |
-| `legal_name` | no | Legal name when known |
-| `organisation_type` | yes | Controlled category |
-| `tax_id` | no | Tax/legal identifier when legitimately required |
-| `country` | no | Country |
-| `region` | no | Region / autonomous community |
-| `island` | no | Island |
-| `municipality` | no | Municipality |
-| `postal_code` | no | Postal code |
-| `address` | no | Professional/public address |
-| `website` | no | Canonical website |
-| `status` | yes | `ACTIVE`, `INACTIVE` or `ARCHIVED` |
-| `created_at` | yes | Creation timestamp |
-| `updated_at` | yes | Last update timestamp |
-| `notes` | no | Operational notes; avoid unnecessary personal data |
+## ORGANISATION_IDENTIFIERS
 
-## 2. CONTACT_POINTS
+Stores official or source-specific organisation identifiers separately from the internal P4CRM ID.
 
-Represents an address/channel through which an organisation or person can be contacted. An email existing here does not imply marketing permission.
+Typical use: an official educational-centre code.
 
-Primary key: `contact_point_id`
+Important fields: `organisation_id`, `scheme`, `value`, `source_id`, `is_primary`.
 
-Fields:
+## CONTACT_POINTS
 
-| Field | Required | Description |
-|---|---:|---|
-| `contact_point_id` | yes | Stable identifier |
-| `organisation_id` | yes | Parent organisation |
-| `person_id` | no | Optional named professional contact |
-| `contact_type` | yes | `EMAIL`, `PHONE`, `WEB`, `POSTAL` |
-| `value` | yes | Email, phone, URL, etc. |
-| `label` | no | e.g. secretaría, dirección, orientación |
-| `is_generic` | yes | Whether it identifies a generic institutional mailbox rather than a named person |
-| `source_id` | yes | Provenance record |
-| `verified_at` | no | Last source verification |
-| `status` | yes | `ACTIVE`, `BOUNCED`, `INVALID`, `INACTIVE` |
-| `created_at` | yes | Creation timestamp |
-| `updated_at` | yes | Last update timestamp |
+Represents an email, phone, URL or postal address associated with an organisation or optional named professional.
 
-Recommended uniqueness rule: normalised `contact_type + value`, with merge/review logic rather than silent duplication.
+Primary key: `contact_point_id`.
 
-## 3. PEOPLE
+An address existing here does **not** imply permission for recurring communication.
 
-Optional professional person record. P4CRM should avoid creating a person record when a generic organisational contact is sufficient.
+Email duplicate comparison is performed on a canonical normalised value while preserving a display value operationally.
 
-Primary key: `person_id`
+## CONTACT_POINT_SOURCES
 
-Fields include `organisation_id`, `given_name`, `family_name`, `role`, `department`, `status`, `created_at`, `updated_at` and `notes`.
+Keeps provenance history when the same contact point is observed again in a source.
 
-## 4. SOURCES
+Important fields: `contact_point_id`, `source_id`, `first_seen_at`, `last_seen_at`, `source_reference`.
 
-Records where data came from and when it was checked.
+A re-import should update provenance rather than erase previous source history.
 
-Primary key: `source_id`
+## PEOPLE
 
-Fields:
+Optional professional-person records. P4CRM should avoid creating a named-person record when a generic institutional contact is sufficient.
 
-- `source_type`
-- `source_name`
-- `source_url`
-- `publisher`
-- `retrieved_at`
-- `licence_or_terms`
-- `notes`
+## SOURCES
 
-Initial source types include public directories, organisation websites, direct contact, forms, referrals and existing relationships.
+Records where imported/contact data came from and when it was checked.
 
-## 5. PROSPECTS
+Important fields include `source_type`, `source_name`, `source_url`, `publisher`, `retrieved_at` and `licence_or_terms`.
 
-Represents a potential relationship between an organisation and a P4CRM project or programme. This is not a consent table.
+## IMPORT_BATCHES
 
-Primary key: `prospect_id`
+Audit record for an import execution.
 
-Important fields:
+Important fields include `source_id`, `imported_at`, `importer_version`, `source_snapshot_ref`, `row_count`, `accepted_count`, `rejected_count` and `status`.
 
+## PROSPECTS
+
+Represents a potential relationship between an organisation and a P4CRM project/programme. This is not a consent table.
+
+A school can be a PROYECT4 prospect even when all related consent scopes remain absent or `NOT_GRANTED`.
+
+## CONSENT_REQUESTS
+
+Represents a request to confirm one or more communication purposes. A request is not consent.
+
+Important fields include:
+
+- `contact_point_id`
 - `organisation_id`
-- `project_code`
-- `source_id`
-- `segment`
-- `priority`
-- `relationship_status`
-- `interests`
-- `owner`
-- `created_at`
-- `updated_at`
-- `notes`
+- `origin_interaction_id`
+- `sender_controller_code`
+- `target_controller_code`
+- `destination`
+- `status`
+- `token_hash`
+- `created_at`, `sent_at`, `expires_at`, `confirmed_at`
+- form/text/privacy versions
+- evidence reference
 
-A school can therefore be a PROYECT4 prospect even when every related consent remains `NOT_GRANTED`.
+Only a digest of the confirmation token is stored.
 
-## 6. CONSENTS
+## CONSENT_REQUEST_SCOPES
 
-Immutable/auditable permission events and current consent state.
+Lists the purposes offered in a confirmation request and the resulting decision for each one.
 
-Primary key: `consent_id`
+Typical decisions: `PENDING`, `GRANTED`, `NOT_GRANTED`.
+
+A confirmation cannot grant a purpose that was not offered by its request.
+
+## CONSENTS
+
+Represents the current consent state for a specific scope.
 
 Natural scope:
 
@@ -141,141 +124,81 @@ Natural scope:
 contact_point_id + controller_code + purpose_code + channel
 ```
 
-Fields:
-
-- `consent_id`
-- `contact_point_id`
-- `controller_code`
-- `purpose_code`
-- `channel`
-- `status`
-- `granted_at`
-- `revoked_at`
-- `source_type`
-- `form_id`
-- `text_version`
-- `privacy_version`
-- `evidence_ref`
-- `notes`
-
-Initial purposes:
+Initial generic purposes:
 
 - `P4_EDUCATIONAL_RELATION`
-- `SAN_BLAS_EDUCATIONAL_VISITS`
+- `PARTNER_EDUCATIONAL_INFO`
+- `PARTNER_GENERAL_UPDATES`
 
-A future implementation should retain consent event history rather than overwriting the only proof of a previous state.
+`PARTNER` is a deployment-configurable external controller placeholder, not the name of a fixed real-world organisation.
 
-## 7. SUPPRESSIONS
+## CONSENT_EVENTS
 
-Prevents communication even after a later re-import.
+Append-only history of grants, revocations, declines and expirations.
 
-Primary key: `suppression_id`
+Every grant created by an email-confirmation workflow should be reconstructable from the event, request, timestamp, form/text/privacy versions and evidence metadata.
 
-Scope may be global or controller/purpose specific.
+## SUPPRESSIONS
 
-Fields include:
+Prevents communication after an unsubscribe, objection, bounce, invalid address, manual block or complaint.
 
-- `contact_point_id`
-- `controller_code`
-- `purpose_code`
-- `channel`
-- `reason`
-- `suppressed_at`
-- `source`
-- `notes`
+Suppressions survive later imports and must be checked when audiences are evaluated.
 
-Examples of reasons: `UNSUBSCRIBED`, `OBJECTED`, `BOUNCE`, `INVALID`, `MANUAL_BLOCK`, `COMPLAINT`.
+## INTERACTIONS
 
-## 8. INTERACTIONS
+Append-oriented relationship and communication log.
 
-Append-oriented log of relationship and communication events.
+Examples include phone calls, confirmation requests, confirmation emails, meetings, form submissions, enquiries, participation and other relationship activity.
 
-Primary key: `interaction_id`
+## CAMPAIGNS
 
-Typical fields:
+Defines a communication initiative, purpose and audience rule. It does not itself prove that a particular recipient is eligible.
 
-- `organisation_id`
-- `contact_point_id`
-- `project_code`
-- `campaign_id`
-- `interaction_type`
-- `direction`
-- `occurred_at`
-- `outcome`
-- `reference`
-- `notes`
+Audience generation must evaluate current permission/legal-basis and suppression state at send time.
 
-Examples: email sent, email clicked, form submitted, phone call, meeting, resource download, enquiry, participation.
+## DATA_TRANSFERS
 
-## 9. CAMPAIGNS
+Audit record for authorised communication of data from one controller to another.
 
-Defines a communication initiative, not its recipient list.
+Important fields include `from_controller_code`, `to_controller_code`, `purpose_code`, `legal_basis`, `consent_id`, `transferred_at` and `status`.
 
-Primary key: `campaign_id`
+For a generic partner flow, a completed transfer follows:
 
-Fields include `name`, `project_code`, `purpose_code`, `channel`, `audience_definition`, `start_at`, `end_at`, `status`, `frequency_rule` and `notes`.
+```text
+valid PARTNER consent
+      |
+      v
+DATA_TRANSFER: P4 -> PARTNER
+```
 
-Audience generation must check consent/legal-basis rules and suppressions at send time.
+The transfer references the consent that authorised the relevant purpose.
 
-## 10. DATA_TRANSFERS
+## PROJECTS
 
-Audit record for authorised communication of data from PROYECT4 to another controller/recipient.
+Registry of CRM-relevant initiatives and collaborations.
 
-Primary key: `transfer_id`
+Generic initial codes include:
 
-Fields:
+- `P4` — PROYECT4 institutional relationship
+- `PARTNER` — configurable external partner relationship
+- additional deployment/project codes as required
 
-- `contact_point_id`
-- `from_controller_code`
-- `to_controller_code`
-- `purpose_code`
-- `legal_basis`
-- `consent_id`
-- `transferred_at`
-- `transfer_method`
-- `receipt_ref`
-- `status`
-- `notes`
+A project code must not be used to guess the legal identity of a controller.
 
-For the San Blas use case, a transfer should require a valid consent record for `SAN_BLAS_EDUCATIONAL_VISITS` before it can be marked `COMPLETED`.
+## OPPORTUNITIES
 
-## 11. PROJECTS
+Tracks substantive future collaboration with an organisation, for example educational projects, sustainability programmes, escape rooms, heritage, entrepreneurship, coexistence/social-relations work or case-based learning.
 
-Registry of CRM-relevant initiatives and external collaborations.
+## Data rules for v0.2
 
-Primary key: `project_code`
-
-Initial records:
-
-- `P4` — PROYECT4 institutional CRM
-- `SAN_BLAS` — San Blas Reserva Ambiental educational relationship
-- `GOFIODESIGN` — creative/material-production relationship, without implied marketing permission
-
-The `controller_code` field must not be used to guess an unknown legal controller. Production configuration must identify controllers accurately.
-
-## 12. OPPORTUNITIES
-
-Tracks potential substantive collaborations with organisations.
-
-Primary key: `opportunity_id`
-
-Examples:
-
-- sustainability programme;
-- educational escape room;
-- heritage project;
-- entrepreneurship activity;
-- social-relations / coexistence programme;
-- case-based learning project.
-
-Fields include `organisation_id`, `project_code`, `opportunity_type`, `theme`, `stage`, `estimated_start`, `owner`, `value_or_scope`, `created_at`, `updated_at` and `notes`.
-
-## Data rules for v0.1
-
-- Stable IDs are never recycled.
-- Deletion is not used to represent an opt-out; suppression is retained.
-- Sources are recorded before or with imported contact data.
-- Interest tags do not imply permission.
+- Stable IDs are not recycled.
+- Official identifiers are preferred for deterministic organisation matching when available.
+- Ambiguous organisation matches are reviewed instead of force-merged.
+- Importing or re-observing an address does not create consent.
+- A confirmation request does not create consent.
+- Raw confirmation tokens are not stored.
 - Consent is not inherited between controllers or purposes.
-- A completed third-party transfer points back to the authorising consent.
-- Production personal/contact data must never be committed to GitHub.
+- Interests do not imply permission.
+- Suppressions survive re-imports.
+- A completed third-party transfer points back to its authorising consent.
+- Real operational contact data and consent evidence must not be committed to GitHub.

@@ -8,7 +8,7 @@ P4CRM does not use a single global marketing flag. Permissions are scoped by:
 contact point + controller + purpose + channel
 ```
 
-A contact may therefore authorise PROYECT4 educational communication and independently accept or refuse one or more San Blas communication purposes.
+A contact may therefore authorise PROYECT4 educational communication and independently accept or refuse one or more purposes associated with a configured external partner.
 
 ## Initial states
 
@@ -34,29 +34,29 @@ channel         = EMAIL
 
 This purpose is intended for PROYECT4 information about educational resources, activities, initiatives and projects within the scope presented to the subscriber.
 
-### San Blas educational information
+### Partner educational information
 
 ```text
-controller_code = SAN_BLAS
-purpose_code    = SAN_BLAS_EDUCATIONAL_INFO
+controller_code = PARTNER
+purpose_code    = PARTNER_EDUCATIONAL_INFO
 channel         = EMAIL
 ```
 
-This covers the clearly described educational scope: materials/resources, educational visits and educational activities related to Reserva Ambiental San Blas.
+This generic purpose covers clearly described educational materials/resources, educational visits and educational activities offered by the configured partner.
 
-### San Blas general updates
+### Partner general updates
 
 ```text
-controller_code = SAN_BLAS
-purpose_code    = SAN_BLAS_GENERAL_UPDATES
+controller_code = PARTNER
+purpose_code    = PARTNER_GENERAL_UPDATES
 channel         = EMAIL
 ```
 
-This covers separately described general updates about the Reserve. It is not automatically granted by accepting educational information.
+This covers separately described general updates from the partner. It is not automatically granted by accepting educational information.
 
-The v0.1 code `SAN_BLAS_EDUCATIONAL_VISITS` is deprecated and maps to `SAN_BLAS_EDUCATIONAL_INFO` before production data exists.
+The v0.1 generic code `PARTNER_EDUCATIONAL_VISITS` is deprecated and maps to `PARTNER_EDUCATIONAL_INFO`.
 
-Before production use, `SAN_BLAS` must resolve to the exact legal entity that will act as controller/recipient for subsequent communication.
+Before production use, `PARTNER` must resolve through deployment configuration to the exact legal entity that will act as controller/recipient for subsequent communication.
 
 ## Phone call -> email confirmation
 
@@ -88,13 +88,7 @@ See [Email confirmation after a phone call](email-confirmation-flow.md).
 
 The raw confirmation token is never persisted. Only its cryptographic digest is stored.
 
-A request must be:
-
-- scoped to a known contact point and target controller;
-- tied to the exact text/privacy versions displayed;
-- time-limited;
-- single-use;
-- confirmed only for purposes originally offered by the request.
+A request must be scoped to a known contact point and target controller, tied to the exact text/privacy versions displayed, time-limited, single-use and limited to purposes originally offered by the request.
 
 If the recipient does nothing, no consent is granted.
 
@@ -102,23 +96,9 @@ If the recipient does nothing, no consent is granted.
 
 `CONSENTS` represents current state. `CONSENT_EVENTS` is the append-only history used to reconstruct grants, withdrawals and other state changes.
 
-For an email-confirmed grant, preserve at least:
+For an email-confirmed grant, preserve at least the contact point, controller, purpose, channel, timestamp, request ID, source, form identifier, consent-text version, privacy-notice version and evidence reference when available.
 
-- `contact_point_id`;
-- controller;
-- purpose;
-- channel;
-- grant timestamp;
-- `request_id`;
-- collection/confirmation source;
-- form identifier;
-- consent-text version;
-- privacy-notice version;
-- evidence reference when available.
-
-The request itself also preserves its creation/sent/expiry/confirmation timestamps and its originating phone interaction when applicable.
-
-## Transfer to San Blas
+## Transfer to a partner
 
 A completed transfer follows this chain:
 
@@ -126,27 +106,27 @@ A completed transfer follows this chain:
 CONTACT_POINT
      |
      v
-CONSENT for a SAN_BLAS purpose = GRANTED
+CONSENT for a PARTNER purpose = GRANTED
      |
      v
-DATA_TRANSFER: P4 -> SAN_BLAS
+DATA_TRANSFER: P4 -> PARTNER
      |
      v
-San Blas receives only the authorised data required for that purpose
+partner receives only the authorised data required for that purpose
 ```
 
-Every completed `DATA_TRANSFERS` row contains the `consent_id` that authorised that purpose.
+Every completed `DATA_TRANSFERS` row contains the `consent_id` that authorised the relevant purpose.
 
-Accepting `SAN_BLAS_EDUCATIONAL_INFO` does not automatically authorise `SAN_BLAS_GENERAL_UPDATES`, and vice versa.
+Accepting `PARTNER_EDUCATIONAL_INFO` does not automatically authorise `PARTNER_GENERAL_UPDATES`, and vice versa.
 
 ## Withdrawal and suppression
 
 Withdrawal is scoped. For example:
 
 ```text
-P4_EDUCATIONAL_RELATION     = GRANTED
-SAN_BLAS_EDUCATIONAL_INFO   = GRANTED
-SAN_BLAS_GENERAL_UPDATES    = REVOKED
+P4_EDUCATIONAL_RELATION   = GRANTED
+PARTNER_EDUCATIONAL_INFO  = GRANTED
+PARTNER_GENERAL_UPDATES   = REVOKED
 ```
 
 A withdrawal or objection creates an append-only event and maintains the appropriate suppression state so that a later source import cannot silently reactivate the contact.

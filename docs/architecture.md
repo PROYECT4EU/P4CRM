@@ -1,10 +1,10 @@
-# P4CRM architecture — v0.1
+# P4CRM architecture — v0.2
 
 ## Scope
 
 P4CRM is the institutional relationship and marketing CRM of **PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio**.
 
-The CRM is deliberately separate from the public educational-resources website. The website may later act as a data-acquisition and consent interface, while P4CRM remains the system of record for contacts, relationships, permissions and communication history.
+The CRM is deliberately separate from any public educational-resources website. A website may act as a data-acquisition and consent interface, while P4CRM remains the system of record for contacts, relationships, permissions and communication history.
 
 ## System boundaries
 
@@ -16,47 +16,46 @@ PUBLIC / PROFESSIONAL SOURCES
   organisations + contacts
             |
             +--> PROYECT4 relationship
-            |
-            +--> consent records
-            |
+            +--> consent requests / confirmations
+            +--> consent + suppression records
             +--> campaigns / interactions
-            |
             +--> opportunities / projects
-            |
             +--> authorised data transfers
                          |
                          v
-              SAN BLAS RESERVA AMBIENTAL
-              only when specifically authorised
+                    PARTNER
+              only when authorised
 ```
 
-### In scope
+`PARTNER` is a configurable external controller/project placeholder. The public repository does not encode the identity of any deployment-specific partner.
+
+## In scope
 
 - Organisations and professional contacts
-- Contact-point provenance
+- Contact-point provenance and repeat-import history
 - Institutional relationship tracking
 - Segmentation and interests
-- Consent evidence and consent history
+- Consent requests, confirmation, evidence and event history
 - Suppression / do-not-contact controls
 - Campaign definitions and interaction history
 - Project and opportunity tracking
 - Traceability of authorised transfers to third parties
 - Analytics derived from CRM activity
 
-### Out of scope for v0.1
+## Out of scope for v0.2
 
-- The public educational-resources website itself
-- Bulk email delivery infrastructure
+- Public educational-resource websites themselves
+- Final bulk-email delivery infrastructure
 - Authentication and role-based access control implementation
-- A production database backend
-- Automated synchronisation with San Blas systems
+- Final production database backend
+- Deployment-specific partner-system integrations
 - Automated scraping or uncontrolled ingestion of contact data
 
 ## Data ownership and responsibility
 
 P4CRM is operated for PROYECT4. A record existing in P4CRM does **not** imply consent to receive marketing communication.
 
-A contact may have several independent relationships and permissions. Consent must therefore be represented by:
+A contact may have several independent relationships and permissions. Consent is represented by:
 
 ```text
 contact point + controller + purpose + channel + status
@@ -64,60 +63,81 @@ contact point + controller + purpose + channel + status
 
 rather than by a single global `marketing_allowed` flag.
 
-## San Blas flow
+## Partner flow
 
-The initial design supports the following workflow:
+The generic external-partner workflow is:
 
-1. PROYECT4 records an organisation and a professional/institutional contact point with its source.
-2. The contact may receive or discover educational resources through a legally appropriate route.
-3. A PROYECT4 consent may be collected for PROYECT4 educational communications.
-4. Separately, the contact may explicitly authorise PROYECT4 to communicate its email address to the legal entity responsible for San Blas Reserva Ambiental for information about educational visits and activities.
-5. Only after that specific authorisation may a `DATA_TRANSFERS` record be created.
-6. Withdrawal from San Blas communications must not automatically withdraw consent for PROYECT4, and vice versa.
+1. PROYECT4 records an organisation and professional/institutional contact point with provenance.
+2. A phone call or another valid interaction may create a confirmation request.
+3. The confirmation request is not itself a grant of email consent.
+4. The recipient may affirm one or more explicitly offered partner purposes.
+5. The resulting `CONSENTS` current state and append-only `CONSENT_EVENTS` are stored separately.
+6. Only after the required authorisation may a `DATA_TRANSFERS` record be completed for that partner and purpose.
+7. Withdrawal from partner communications does not automatically withdraw an independent PROYECT4 permission, and vice versa.
 
-The final legal identity of the San Blas data controller must be configured before production use.
+The exact legal identity and privacy information for a deployment's `PARTNER` must be configured before production use.
+
+## Import architecture
+
+v0.2 adds repeatable import identity and provenance:
+
+```text
+SOURCES
+  |----< IMPORT_BATCHES
+  |----< CONTACT_POINT_SOURCES
+
+ORGANISATIONS
+  |----< ORGANISATION_IDENTIFIERS
+  |----< CONTACT_POINTS
+  |----< PROSPECTS
+```
+
+Official identifiers are preferred when available. Ambiguous identity matches are reviewed rather than force-merged.
+
+## Confirmation architecture
+
+```text
+INTERACTION: PHONE_CALL
+        |
+        v
+CONSENT_REQUESTS
+        |----< CONSENT_REQUEST_SCOPES
+        |
+        v
+one-time email token
+        |
+        v
+explicit confirmation
+        |
+        +----> CONSENTS (current state)
+        +----> CONSENT_EVENTS (append-only history)
+```
+
+Raw confirmation tokens are never persisted; only cryptographic digests are stored.
 
 ## Google Drive operational layer
 
-The initial operational workspace is the shared Drive `P4CRM`:
-
-```text
-P4CRM/
-├── 00_ADMIN/
-├── 01_DATA/
-├── 02_MARKETING/
-├── 03_RESOURCES/
-├── 04_WEB/
-└── 05_ANALYTICS/
-```
-
-`01_DATA/P4CRM_CORE` currently mirrors the v0.1 logical model for prototyping and data preparation.
+The initial operational workspace is the shared Drive `P4CRM`, with `P4CRM_CORE` mirroring the current logical model for prototyping and data preparation.
 
 ## GitHub source-of-truth layer
 
-This repository is the source of truth for:
-
-- schema definitions;
-- enum definitions;
-- technical documentation;
-- import/export logic;
-- application code;
-- tests;
-- migrations.
+This repository is the source of truth for schema definitions, enum definitions, technical documentation, import/export logic, application code, tests and migrations.
 
 Operational contact data and consent evidence must not be committed to the public repository.
 
 ## Design principles
 
 1. **One organisation, many relationships.** Do not duplicate an organisation for every project.
-2. **Contact point is not consent.** A public professional email can be stored with provenance without becoming an authorised marketing contact.
+2. **Contact point is not consent.** A public professional email can exist with provenance without becoming an authorised marketing contact.
 3. **Consent is scoped.** Controller, purpose and channel are mandatory dimensions.
-4. **Suppressions survive imports.** Opt-outs must prevent accidental reactivation after a later directory import.
-5. **Every imported datum has provenance.** Source and verification date are first-class data.
-6. **Transfers are explicit events.** Sharing an authorised contact with another controller is separately traceable.
-7. **Interests are not permissions.** Segmentation and inferred/reported interests never replace consent or another applicable legal basis.
-8. **No personal data in Git.** Production data belongs in controlled operational storage, not this repository.
+4. **Requests are not grants.** Confirmation workflows preserve the distinction between a request and an affirmative consent event.
+5. **Suppressions survive imports.** Opt-outs prevent accidental reactivation after later directory imports.
+6. **Every imported datum has provenance.** Source and verification history are first-class data.
+7. **Transfers are explicit events.** Sharing an authorised contact with another controller is separately traceable.
+8. **Interests are not permissions.** Segmentation never replaces consent or another applicable legal basis.
+9. **Partner identity is deployment configuration.** Public code uses `PARTNER`; real controller identities belong in deployment-specific configuration.
+10. **No operational personal data in Git.** Production data belongs in controlled storage, not this repository.
 
 ## Versioning
 
-This document describes **schema v0.1**. Breaking changes to entity meaning or required relationships should increment the schema version and be accompanied by a migration note.
+This document describes **schema v0.2**. Breaking changes to entity meaning or required relationships should increment the schema version and be accompanied by a migration note.

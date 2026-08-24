@@ -1,0 +1,17 @@
+{
+  "controllers": {
+    "P4": {
+      "display_name": "PROYECT4",
+      "legal_name": "PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio",
+      "privacy_url": "https://proyect4.eu/",
+      "production_ready": true
+    },
+    "SAN_BLAS": {
+      "display_name": "San Blas Reserva Ambiental",
+      "legal_name": null,
+      "privacy_url": null,
+      "production_ready": false,
+      "notes": "Exact legal controller/recipient must be verified before enabling production consent or transfer workflows."
+    }
+  }
+}

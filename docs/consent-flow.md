@@ -1,4 +1,4 @@
-# Consent and transfer flow — v0.1
+# Consent and transfer flow — v0.2
 
 ## Principle
 
@@ -8,7 +8,7 @@ P4CRM does not use a single global marketing flag. Permissions are scoped by:
 contact point + controller + purpose + channel
 ```
 
-A contact may therefore authorise PROYECT4 educational communication and independently accept or refuse communication of the same contact point to the entity responsible for San Blas Reserva Ambiental.
+A contact may therefore authorise PROYECT4 educational communication and independently accept or refuse one or more San Blas communication purposes.
 
 ## Initial states
 
@@ -20,11 +20,11 @@ PROSPECT.relationship_status = NEW
 CONSENT = absent or NOT_GRANTED
 ```
 
-This state means that the contact exists in the relationship database. It does not by itself mean that a marketing campaign is authorised.
+This means that the contact exists in the relationship database. It does not by itself mean that recurring email communication is authorised.
 
-## PROYECT4 consent
+## Initial purposes
 
-Initial purpose code:
+### PROYECT4
 
 ```text
 controller_code = P4
@@ -34,60 +34,99 @@ channel         = EMAIL
 
 This purpose is intended for PROYECT4 information about educational resources, activities, initiatives and projects within the scope presented to the subscriber.
 
-## San Blas consent / authorisation
-
-Initial purpose code:
+### San Blas educational information
 
 ```text
 controller_code = SAN_BLAS
-purpose_code    = SAN_BLAS_EDUCATIONAL_VISITS
+purpose_code    = SAN_BLAS_EDUCATIONAL_INFO
 channel         = EMAIL
 ```
 
-This permission must be presented separately from the PROYECT4 permission.
+This covers the clearly described educational scope: materials/resources, educational visits and educational activities related to Reserva Ambiental San Blas.
 
-Before production use, `SAN_BLAS` must resolve to the exact legal entity that will act as recipient/controller for the subsequent communication.
-
-## Expected form behaviour
-
-Conceptually the public form should allow four outcomes:
+### San Blas general updates
 
 ```text
-P4 = NO   | SAN_BLAS = NO
-P4 = YES  | SAN_BLAS = NO
-P4 = NO   | SAN_BLAS = YES
-P4 = YES  | SAN_BLAS = YES
+controller_code = SAN_BLAS
+purpose_code    = SAN_BLAS_GENERAL_UPDATES
+channel         = EMAIL
 ```
 
-Access to free educational resources should not depend on selecting either optional communication permission.
+This covers separately described general updates about the Reserve. It is not automatically granted by accepting educational information.
 
-## Evidence
+The v0.1 code `SAN_BLAS_EDUCATIONAL_VISITS` is deprecated and maps to `SAN_BLAS_EDUCATIONAL_INFO` before production data exists.
 
-For each consent event, preserve enough evidence to reconstruct what happened:
+Before production use, `SAN_BLAS` must resolve to the exact legal entity that will act as controller/recipient for subsequent communication.
 
-- `contact_point_id`
-- controller
-- purpose
-- channel
-- status
-- timestamp
-- collection source
-- form identifier
-- consent-text version
-- privacy-notice version
-- evidence reference when available
+## Phone call -> email confirmation
 
-The application layer should prefer an append-only consent-event history. The v0.1 Sheet prototype currently represents the logical state and evidence fields; a later implementation may split current state from immutable events.
+A school, AMPA or other organisation may provide an email address during a telephone call and request that a confirmation message be sent to it.
+
+P4CRM records the call as an interaction and creates a `CONSENT_REQUESTS` row plus one `CONSENT_REQUEST_SCOPES` row for every offered purpose.
+
+```text
+PHONE_CALL
+    |
+    v
+CONSENT_REQUEST status=CREATED/SENT
+    |
+    v
+confirmation email with one-time token
+    |
+    v
+explicit web action from the supplied email address
+    |
+    v
+CONSENT status=GRANTED + append-only CONSENT_EVENT
+```
+
+The call/request is not itself a `GRANTED` email consent in this workflow.
+
+See [Email confirmation after a phone call](email-confirmation-flow.md).
+
+## Confirmation-request security
+
+The raw confirmation token is never persisted. Only its cryptographic digest is stored.
+
+A request must be:
+
+- scoped to a known contact point and target controller;
+- tied to the exact text/privacy versions displayed;
+- time-limited;
+- single-use;
+- confirmed only for purposes originally offered by the request.
+
+If the recipient does nothing, no consent is granted.
+
+## Evidence and history
+
+`CONSENTS` represents current state. `CONSENT_EVENTS` is the append-only history used to reconstruct grants, withdrawals and other state changes.
+
+For an email-confirmed grant, preserve at least:
+
+- `contact_point_id`;
+- controller;
+- purpose;
+- channel;
+- grant timestamp;
+- `request_id`;
+- collection/confirmation source;
+- form identifier;
+- consent-text version;
+- privacy-notice version;
+- evidence reference when available.
+
+The request itself also preserves its creation/sent/expiry/confirmation timestamps and its originating phone interaction when applicable.
 
 ## Transfer to San Blas
 
-A completed transfer should follow this chain:
+A completed transfer follows this chain:
 
 ```text
 CONTACT_POINT
      |
      v
-CONSENT: SAN_BLAS_EDUCATIONAL_VISITS = GRANTED
+CONSENT for a SAN_BLAS purpose = GRANTED
      |
      v
 DATA_TRANSFER: P4 -> SAN_BLAS
@@ -96,31 +135,32 @@ DATA_TRANSFER: P4 -> SAN_BLAS
 San Blas receives only the authorised data required for that purpose
 ```
 
-A `DATA_TRANSFERS` row should contain the `consent_id` that authorised the transfer.
+Every completed `DATA_TRANSFERS` row contains the `consent_id` that authorised that purpose.
+
+Accepting `SAN_BLAS_EDUCATIONAL_INFO` does not automatically authorise `SAN_BLAS_GENERAL_UPDATES`, and vice versa.
 
 ## Withdrawal and suppression
 
-Withdrawal is scoped. Examples:
+Withdrawal is scoped. For example:
 
 ```text
-P4 educational email       = GRANTED
-San Blas educational email = REVOKED
+P4_EDUCATIONAL_RELATION     = GRANTED
+SAN_BLAS_EDUCATIONAL_INFO   = GRANTED
+SAN_BLAS_GENERAL_UPDATES    = REVOKED
 ```
 
-or the inverse are both valid states.
-
-A withdrawal or objection should also generate/maintain the appropriate suppression state so that a later directory import cannot silently reactivate the contact.
+A withdrawal or objection creates an append-only event and maintains the appropriate suppression state so that a later source import cannot silently reactivate the contact.
 
 ## Send-time rule
 
-Future campaign tooling should evaluate eligibility at send time, not only when a list is created.
+Campaign tooling evaluates eligibility at send time, not only when an audience is first created.
 
 Conceptually:
 
 ```text
 eligible =
   contact point is active
-  AND required permission/legal basis is valid
+  AND the campaign's required permission/legal basis is valid
   AND no matching suppression exists
   AND campaign purpose matches the permission scope
 ```

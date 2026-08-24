@@ -1,25 +1,40 @@
-# Import contract — v0.1
+# Import contract — v0.2
 
-This contract defines how external professional/institutional sources should enter P4CRM before any production importer is implemented.
+This contract defines how external professional/institutional sources enter P4CRM.
 
 ## Goal
 
-Import source data without confusing **discoverability** with **permission to communicate**.
+Import source data without confusing **discoverability** with **permission to communicate** and without creating duplicate organisations on later imports.
 
-An imported institutional email should normally create or update:
+An imported institutional email normally creates or updates:
 
 ```text
 SOURCES
+IMPORT_BATCHES
 ORGANISATIONS
+ORGANISATION_IDENTIFIERS (when an official identifier exists)
 CONTACT_POINTS
+CONTACT_POINT_SOURCES
 PROSPECTS
 ```
 
-It should **not** create a `GRANTED` consent unless the import itself is evidence of an already valid, documented consent event.
+It does **not** create a `GRANTED` consent merely because an address is public or professional.
+
+## Stable identifiers
+
+The importer uses deterministic identifiers so a later run over the same source does not create a fresh entity solely because the import happened on a different date.
+
+Priority for organisation identity:
+
+1. trusted external identifier, such as an official educational-centre code, together with its identifier scheme;
+2. otherwise a conservative normalised key based on organisation name + municipality + region;
+3. ambiguous matches are flagged for review rather than force-merged.
+
+`ORGANISATION_IDENTIFIERS` keeps official/source identifiers separate from the organisation's internal P4CRM ID.
 
 ## Minimum source record
 
-Every import batch must identify:
+Every import batch identifies:
 
 | Field | Required | Example |
 |---|---:|---|
@@ -29,6 +44,8 @@ Every import batch must identify:
 | `publisher` | when available | Publishing institution |
 | `retrieved_at` | yes | ISO timestamp |
 | `notes` | no | Scope/version notes |
+
+A batch also records importer version, source snapshot/reference when available, row counts and rejection counts in `IMPORT_BATCHES`.
 
 ## Minimum organisation record
 
@@ -43,6 +60,7 @@ For the initial educational-centre use case:
 | `island` | recommended |
 | `municipality` | recommended |
 | `website` | when available |
+| official centre/organisation identifier | strongly preferred when available |
 
 Do not create duplicate organisations merely because the same centre appears in several source directories.
 
@@ -58,11 +76,13 @@ Do not create duplicate organisations merely because the same centre appears in 
 | `verified_at` | recommended |
 | `status` | yes |
 
-For email addresses, normalisation should trim whitespace and compare values case-insensitively for duplicate detection while preserving a canonical display value.
+For email addresses, v0.2 trims whitespace and compares the canonical lowercase address for deterministic duplicate detection.
+
+`CONTACT_POINT_SOURCES` preserves each source in which a contact point has been observed, including `first_seen_at` and `last_seen_at`. Re-observation therefore improves provenance rather than replacing it.
 
 ## Prospect creation
 
-The initial education-directory import may create a PROYECT4 prospect such as:
+The initial education-directory import creates or reuses a PROYECT4 prospect such as:
 
 ```text
 project_code        = P4
@@ -70,33 +90,44 @@ relationship_status = NEW
 segment             = EDUCATION
 ```
 
-Additional segmentation such as island, municipality, educational stage or organisation type should be derived from organisation/source metadata where available rather than embedded into consent state.
+Additional segmentation such as island, municipality, educational stage or organisation type is derived from organisation/source metadata where available rather than embedded into consent state.
 
 ## Suppression check
 
-Before a new or re-imported contact point can be considered for any outreach workflow, the importer or downstream audience builder must check existing suppressions.
+Before a new or re-imported contact point can enter an outreach workflow, the importer or downstream audience builder checks existing suppressions.
 
-A suppression must not be deleted or ignored because the same email was discovered again in a newer source.
+A suppression is never deleted or ignored because the same email was discovered again in a newer source.
 
 ## Duplicate strategy
 
-Prefer deterministic review rules:
+Use deterministic review rules:
 
-1. Match exact normalised contact point.
-2. Reuse its existing organisation where appropriate.
-3. If organisation identity is uncertain, flag for review rather than auto-merging unrelated entities.
-4. Keep multiple `SOURCES`/verification events when useful for provenance.
+1. Resolve an official organisation identifier when available.
+2. Otherwise build the conservative organisation match key.
+3. Normalise and match the contact point within that organisation.
+4. Reuse existing IDs when keys match.
+5. Add/update source provenance for a re-observed contact point.
+6. If organisation identity is uncertain, quarantine for review rather than auto-merging unrelated entities.
 
-## Import errors
+## Import errors and quarantine
 
-Rows should be rejected or quarantined when:
+Rows are rejected/quarantined when:
 
 - the organisation cannot be identified;
 - a contact value is malformed;
 - source provenance is missing;
 - required enum values are unknown;
-- an attempted import tries to set consent to `GRANTED` without valid evidence metadata.
+- an external identifier conflicts with an existing organisation;
+- an attempted import tries to set consent to `GRANTED` without valid consent evidence.
+
+Rejected rows remain operational data and must not be committed to this public repository.
+
+## Reference implementation
+
+`src/p4crm/importer.py` provides storage-agnostic normalisation and deterministic ID helpers for the v0.2 contract.
+
+The next integration layer may write the resulting records to the current Google Sheet prototype or to a future database, but storage does not change these identity and provenance rules.
 
 ## Data not allowed in the public repository
 
-Import files containing real contact details, named-person data or consent evidence must remain in controlled operational storage and are excluded by `.gitignore` patterns. Synthetic fixtures may be used in tests.
+Import files containing real contact details, named-person data or consent evidence remain in controlled operational storage and are excluded by `.gitignore` patterns. Synthetic fixtures may be used in tests.

@@ -1,219 +1,247 @@
 # P4CRM
 
-**P4CRM** is an open-source CRM for managing institutional contacts, communication consent, segmentation, and educational outreach.
+**P4CRM** is an open-source CRM for managing institutional contacts, communication consent, segmentation, educational outreach and long-term project relationships.
 
 The project is developed by **PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio**.
 
 ## Purpose
 
-P4CRM is designed to provide a simple and transparent way to manage relationships with organisations and professional contacts while keeping consent, communication history, and data usage traceable.
+P4CRM provides a simple and transparent way to manage relationships with organisations and professional contacts while keeping provenance, permissions, communication history and data use traceable.
 
 The system is intended for relationships with:
 
-* Schools and educational centres
-* Teachers and education professionals
-* Associations and NGOs
-* Public and private institutions
-* Companies and professional contacts
-* Project partners and collaborators
-* Organisations interested in educational, environmental, cultural, social or entrepreneurial initiatives
+- schools and educational centres;
+- teachers and education professionals;
+- associations and NGOs;
+- public and private institutions;
+- companies and professional contacts;
+- project partners and collaborators;
+- organisations interested in educational, environmental, cultural, social or entrepreneurial initiatives.
 
-P4CRM is not intended to be just a sales database. Its main purpose is to manage **relationships, permissions and communication workflows**.
+P4CRM is not intended to be just a sales database. Its main purpose is to manage **relationships, permissions, communication workflows and project opportunities**.
 
 ## Core principles
 
-### Consent first
+### Contact is not consent
 
-Every communication should be linked to a clear legal basis and, where consent is used, to a traceable consent record.
+A professional or institutional contact can exist in P4CRM with documented provenance without being authorised for marketing communication.
 
-P4CRM should make it possible to record:
+### Consent is scoped
 
-* Who gave consent
-* When consent was given
-* How it was collected
-* What information was provided at the time
-* What types of communication were authorised
-* Which organisation or project may use the data
-* Consent status
-* Withdrawal or modification of consent
+Where consent is the applicable basis, P4CRM models it by:
 
-Consent should never be assumed to apply automatically to another organisation, project or purpose.
+```text
+contact point + controller + purpose + channel
+```
+
+Consent must not be assumed to apply automatically to another organisation, project or purpose.
 
 ### Data minimisation
 
-Only information that is useful for a legitimate relationship or communication purpose should be stored.
+Only information useful for a legitimate relationship or communication purpose should be stored.
 
 ### Traceability
 
-Changes to consent, contact information and communication preferences should be auditable.
+P4CRM records the source of imported contact data and is designed to keep consent, suppression, interaction and transfer history auditable.
 
 ### Separation of purposes
 
-A contact may have different relationships with different projects.
+A school may independently:
 
-For example, a school may:
+- receive educational information from PROYECT4;
+- participate in a PROYECT4 educational project;
+- be interested in sustainability workshops or escape rooms;
+- authorise its contact details to be communicated for information about educational visits to Reserva Ambiental San Blas.
 
-* Receive educational resources from PROYECT4
-* Request information about future educational projects
-* Be interested in sustainability workshops or escape rooms
-* Request information about visits to Reserva Ambiental San Blas
+Those relationships and permissions remain distinguishable.
 
-P4CRM should keep those purposes and permissions distinguishable.
+### Suppressions survive imports
 
-### Open source
+An unsubscribe, objection or block must not disappear simply because the same address is later found again in a public directory.
 
-P4CRM is being developed as an open project so that its architecture and data-processing logic can be inspected, improved and reused.
+### Open source, private operational data
+
+The code, architecture and schema are open. Real CRM contact records, consent evidence and credentials are **not** stored in this public repository.
+
+## v0.1 foundation
+
+The first implementation milestone establishes the CRM data contract and workflows before the production runtime is selected.
+
+Current v0.1 entities:
+
+```text
+ORGANISATIONS
+CONTACT_POINTS
+PEOPLE
+SOURCES
+PROSPECTS
+CONSENTS
+SUPPRESSIONS
+INTERACTIONS
+CAMPAIGNS
+DATA_TRANSFERS
+PROJECTS
+OPPORTUNITIES
+```
+
+Documentation:
+
+- [Architecture](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [Consent and transfer flow](docs/consent-flow.md)
+- [Machine-readable v0.1 table contract](schemas/p4crm-v0.1.json)
+- [Controlled values](config/enums.json)
+- [Changelog](CHANGELOG.md)
+
+## Initial San Blas use case
+
+P4CRM belongs to PROYECT4. Reserva Ambiental San Blas is represented as a related external project/use case.
+
+The intended flow is:
+
+```text
+professional / institutional source
+              |
+              v
+            P4CRM
+              |
+      PROYECT4 relationship
+              |
+              +--> optional PROYECT4 educational consent
+              |
+              +--> separate San Blas authorisation
+                          |
+                          v
+                authorised data transfer
+                          |
+                          v
+              Reserva Ambiental San Blas
+```
+
+Only contacts that have the required specific authorisation may be included in the corresponding San Blas transfer workflow.
+
+The exact legal entity behind the `SAN_BLAS` controller code must be confirmed before production use.
+
+## Educational relationships
+
+P4CRM supports long-term institutional relationships instead of treating every contact as a sales lead.
+
+Potential future PROYECT4 work with an organisation may include:
+
+- sustainability and environmental education;
+- biodiversity, territory and heritage;
+- entrepreneurship;
+- social relationships and coexistence;
+- educational escape rooms;
+- case-based learning;
+- arts and creative education;
+- new educational resources and activities.
+
+These interests may be used for relationship management and segmentation, but **interests are not permissions**.
+
+## Repository structure
+
+```text
+P4CRM/
+├── config/       # controlled values and configuration contracts
+├── docs/         # architecture and workflow documentation
+├── schemas/      # versioned data contracts
+├── scripts/      # future import/export/migration tooling
+├── src/          # future application source
+├── tests/        # contract and workflow tests
+├── CHANGELOG.md
+└── README.md
+```
+
+Operational data is maintained outside the public Git repository.
 
 ## Planned capabilities
 
-P4CRM is expected to include:
+### Contact and organisation management
 
-### Contact management
+- organisations;
+- optional named professional contacts;
+- multiple contact points per organisation;
+- source provenance and verification dates;
+- tags, interests and segmentation;
+- relationship history.
 
-* Organisations
-* Individual professional contacts
-* Contact roles
-* Multiple contacts per organisation
-* Contact sources
-* Tags and segmentation
-* Notes and relationship history
+### Consent and suppression management
 
-### Consent management
-
-* Consent records
-* Consent source
-* Consent timestamp
-* Consent wording/version
-* Communication channels
-* Authorised purposes
-* Data controller or authorised organisation
-* Consent withdrawal
-* Suppression lists
-* Consent history
-
-### Organisations and projects
-
-Contacts may be associated with one or more projects while maintaining separate communication permissions.
-
-Initial use cases include:
-
-**PROYECT4**
-
-Educational and institutional communication related to projects involving areas such as:
-
-* Sustainability
-* Environmental education
-* Local history and heritage
-* Entrepreneurship
-* Social relationships
-* Educational escape rooms
-* Case-based learning
-* Educational resources and activities
-
-**Reserva Ambiental San Blas**
-
-Contacts that have the appropriate permission may also be managed for communications related to educational visits and activities at Reserva Ambiental San Blas.
-
-The CRM must preserve the distinction between the original PROYECT4 relationship and any additional purpose or organisation authorised by the contact.
+- scoped consent records;
+- consent source and timestamp;
+- wording and privacy-notice versions;
+- communication channels and purposes;
+- withdrawal history;
+- suppression lists;
+- evidence references.
 
 ### Communication management
 
-Planned functionality may include:
+- campaign definitions;
+- audience rules;
+- communication history;
+- frequency controls;
+- unsubscribe/suppression enforcement;
+- future delivery-system integration.
 
-* Contact lists
-* Segmentation
-* Campaign audiences
-* Communication history
-* Email templates
-* Campaign tracking
-* Exclusion lists
-* Frequency controls
-* Unsubscribe management
+### Projects and opportunities
 
-### Educational relationships
+- project registry;
+- relationship opportunities;
+- educational project themes;
+- follow-up stages;
+- participation and collaboration history.
 
-The CRM should also support long-term institutional relationships rather than treating every contact as a sales lead.
+### Authorised transfers
 
-Examples include:
+P4CRM can record an explicit transfer event when a contact has authorised data communication to another controller for a defined purpose. The transfer record points back to the authorising consent/evidence.
 
-* Schools previously contacted
-* Schools that have participated in activities
-* Teachers interested in resources
-* Potential educational partners
-* Institutions interested in future projects
-* Project proposals and follow-up
-* Historical participation
+## Google Drive prototype
 
-## Data model
+The current operational prototype uses a shared Google Drive workspace and a `P4CRM_CORE` Google Sheet that mirrors the v0.1 logical model for early data preparation.
 
-The initial model is expected to distinguish at least between:
-
-```text
-Organisation
-    └── Contact
-          ├── Relationship
-          ├── Consent
-          ├── Communication preferences
-          ├── Tags / Segments
-          └── Interaction history
-
-Project
-    ├── Purpose
-    └── Authorised contacts
-
-Campaign
-    ├── Audience
-    ├── Purpose
-    └── Communication history
-```
-
-The exact technical implementation is still under development.
+GitHub remains the source of truth for schema, code, scripts, tests and technical documentation. Google Drive contains operational working data and must not be treated as a public-code repository.
 
 ## Privacy and data protection
 
-P4CRM is intended to be designed around privacy by default.
+P4CRM is intended to be designed around privacy by default, including:
 
-Important design requirements include:
+- purpose limitation;
+- data minimisation;
+- scoped permissions where applicable;
+- consent evidence;
+- withdrawal management;
+- access control;
+- retention policies;
+- export/deletion workflows;
+- suppression of contacts who opt out;
+- separation between controllers and communication purposes.
 
-* Purpose limitation
-* Data minimisation
-* Explicit consent scopes where applicable
-* Consent evidence
-* Withdrawal management
-* Access control
-* Retention policies
-* Export and deletion workflows
-* Suppression of contacts who opt out
-* Separation between organisations and communication purposes
-
-Compliance with applicable data-protection and electronic-communications rules must be evaluated according to each deployment and use case.
+Compliance with applicable data-protection and electronic-communications rules must be evaluated according to each deployment and use case. P4CRM's schema does not itself determine the lawful basis of a particular communication.
 
 ## Project status
 
-**Early development.**
+**Schema / architecture v0.1 — early development.**
 
-The repository is currently being structured and the initial CRM architecture, data model and workflows are being defined.
+The public educational-resources website is being treated as a separate project. P4CRM may later receive consent and interaction events from that website through a defined integration.
 
 ## Roadmap
 
-Initial development priorities:
-
-1. Define the contact and organisation data model
-2. Define consent and communication-purpose models
-3. Create consent history and auditability
-4. Implement segmentation
-5. Implement communication lists and suppression rules
-6. Add campaign management
-7. Add organisation and project relationship tracking
-8. Add import/export tools
-9. Define user roles and permissions
-10. Document privacy and retention workflows
+1. Finalise and validate schema v0.1.
+2. Define stable ID generation and normalisation rules.
+3. Implement source/import validation.
+4. Import the first controlled set of educational organisations.
+5. Implement suppression-aware audience logic.
+6. Implement consent-event history.
+7. Implement San Blas authorised-transfer export.
+8. Add campaign and interaction tooling.
+9. Add project/opportunity workflows.
+10. Define user roles, access control and production storage.
 
 ## Contributing
 
-P4CRM is intended to evolve as an open-source project.
-
-Contribution guidelines will be added as the project structure becomes stable.
+P4CRM is intended to evolve as an open-source project. Contribution guidelines will be added as the project structure becomes stable.
 
 ## License
 
@@ -221,5 +249,5 @@ A suitable open-source licence will be selected before the first stable release.
 
 ---
 
-**P4CRM**
+**P4CRM**  
 PROYECT4 — Asociación Canaria para el Desarrollo Integral de las Personas y el Territorio
